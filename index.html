@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>急診護理師的一天</title>
+<style>
+:root{--bg:#0f1a24;--ink:#e6eef2;--card:#16222fee;--acc:#3fe0c5;--warn:#f0b030;--bad:#f05a5a;--ok:#3fe0a0;--line:#2b3c4c}
+@media (prefers-color-scheme:dark){:root{--bg:#10201f;--ink:#e4f1f0;--card:#183033ee;--acc:#3cc4c0;--line:#2c4a4d}}
+:root[data-theme=dark]{--bg:#10201f;--ink:#e4f1f0;--card:#183033ee;--acc:#3cc4c0;--line:#2c4a4d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Sans TC","PingFang TC",system-ui,sans-serif;overflow:hidden;touch-action:none}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#top{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);padding:6px 8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--card);border-bottom:1px solid var(--line);font-size:13px;z-index:5}
+#top b{font-size:20px;font-variant-numeric:tabular-nums}
+#bar{width:60px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}#bar i{display:block;height:100%;background:var(--warn);width:0}
+.sp{flex:1}.bar{width:44px;height:8px;background:var(--line);border-radius:4px;overflow:hidden;display:inline-block}.bar i{display:block;height:100%;background:var(--ok);width:0}#hgb{background:var(--warn)}
+button{font:inherit;color:inherit;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 10px}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:disabled{opacity:.4}
+#task{position:fixed;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 74px);background:var(--card);border:1px solid var(--line);border-left:5px solid var(--warn);border-radius:10px;padding:8px 10px;font-size:13px;z-index:4;display:flex;gap:8px;align-items:center}
+#task div{flex:1}#arrow{font-size:24px;display:inline-block;color:var(--warn)}
+#joy{position:fixed;left:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);width:130px;height:130px;border-radius:50%;background:var(--card);border:2px solid var(--line);z-index:4}
+#knob{position:absolute;left:45px;top:45px;width:40px;height:40px;border-radius:50%;background:var(--acc)}
+#act{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);width:96px;height:96px;border-radius:50%;background:var(--acc);color:#fff;font-size:16px;z-index:4;border:0}
+#act:disabled{background:var(--line);color:var(--ink)}
+#hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 165px);text-align:center;font-size:13px;z-index:4;pointer-events:none}
+#hint span{background:var(--card);padding:4px 10px;border-radius:12px;border:1px solid var(--line)}
+#modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:10;padding:12px}
+#box{background:var(--bg);border-radius:14px;padding:14px;max-width:420px;width:100%;max-height:82%;overflow:auto;font-size:14px;line-height:1.5}
+#box h3{margin:0 0 8px}.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.row button{flex:1;min-height:44px}
+table{width:100%;border-collapse:collapse}td{padding:4px;border-bottom:1px solid var(--line)}
+.chk{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}.chk input{width:22px;height:22px}
+.err{color:var(--bad)}.good{color:var(--ok)}
+.pop{position:fixed;left:50%;top:45%;transform:translateX(-50%);font-size:28px;font-weight:700;z-index:12;pointer-events:none;animation:up 1.2s ease-out forwards;text-shadow:0 1px 2px #0006}@keyframes up{to{transform:translate(-50%,-60px);opacity:0}}
+#vg{position:fixed;inset:0;pointer-events:none;z-index:3;box-shadow:inset 0 0 90px 20px rgba(201,64,58,.9);opacity:0}
+#stats{position:fixed;right:8px;top:120px;width:200px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:13px;z-index:4}.st{display:flex;align-items:center;gap:6px;margin:4px 0}.st span:first-child{width:34px}.st .bar{flex:1;width:auto;height:8px}#stats #bar{width:auto;flex:1}.st em{font-style:normal;width:54px;text-align:right}
+#cbbar{position:fixed;left:50%;transform:translateX(-50%);top:60px;background:#c9302c;color:#fff;font-weight:700;padding:6px 14px;border-radius:0 0 12px 12px;z-index:6;display:none;animation:pl .6s infinite alternate;white-space:nowrap}@keyframes pl{to{background:#7a1010}}
+#cbtn{position:fixed;right:124px;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);width:70px;height:70px;border-radius:50%;background:#e8505b;color:#fff;font-size:20px;font-weight:700;z-index:4;border:0}
+@media (max-width:480px){#top{gap:4px;padding:4px 6px;font-size:12px}#top button{padding:4px 7px}.bar,#bar{width:34px}}
+#start{position:fixed;inset:0;z-index:30;background:linear-gradient(160deg,#0a141c,#122238);display:flex;align-items:center;justify-content:center;padding:20px;text-align:center}
+#start .card{max-width:380px}#start h1{font-size:28px;margin:0 0 4px;letter-spacing:1px}#start p.sub{color:var(--acc);margin:0 0 18px;font-size:14px}
+#start ul{text-align:left;list-style:none;padding:0;margin:0 0 22px;font-size:13px;line-height:1.9;color:#cfe0e4}#start li::before{content:'• ';color:var(--acc)}
+#start button{width:100%;min-height:52px;font-size:18px;font-weight:700;background:var(--acc);color:#0a141c;border:0;border-radius:12px}
+</style></head><body>
+<div id="start"><div class="card"><h1>🏥 急診護理師的一天</h1><p class="sub">07:30–16:00・值班模擬</p>
+<ul><li>左下搖桿或 WASD 移動,右下「互動」鍵或 E 鍵操作</li><li>任務依緊急度自動排序,更緊急的事件會強制插隊</li><li>注意體力與飢餓,記得找機會吃午餐</li><li>所有病情、藥物、數據均為虛構,非真實臨床教學依據</li></ul>
+<button id="startBtn">🚑 開始上班</button></div></div>
+<div id="top"><b id="clk">07:30</b>
+<span>分數 <b id="sc">0</b></span><span id="prog">0/0</span>
+<span class="sp"></span><button id="m0">⏸</button><button id="m1" class="on">▶</button><button id="m2">⏩</button><button id="m3">⚙</button><button id="mu">🔊</button></div>
+<div id="task"><div id="tt"></div><span id="arrow">➤</span><button id="nav">導航</button></div>
+<div id="hint"></div><div id="joy"><div id="knob"></div></div><button id="act" disabled>互動</button>
+<div id="cbbar"></div><div id="stats"><div class="st"><span>精力</span><span class="bar"><i id="stb"></i></span><em id="stv"></em></div><div class="st"><span>壓力</span><span class="bar" id="bar"><i></i></span><em id="srv"></em></div><div class="st"><span>肚子</span><span class="bar"><i id="hgb"></i></span><em id="hgv"></em></div></div><div id="vg"></div><div id="modal"><div id="box"></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ===== 設定(集中管理)=====
+const CFG={start:450,end:960,rates:[0,0.7,2.5,1.2],speed:5.5,pr:0.45,reach:1.8,
+ cost:{clockin:1,handover:15,vitals:5,endshift:10,glucose:3,insulin:4,med:4,dressing:12,steam:8},pts:{done:5,late:3,overdue:-3,missed:-6,major:-8,falseAlarm:-2,endshift:10}};
+const REF={T:[36,37.5],P:[60,100],R:[12,20],SBP:[90,140],DBP:[60,90],SpO2:[94,100]};
+const NAMES=['A-01','B-02','C-03','D-04','E-05','F-06','G-07','H-08','I-09','J-10','K-11','L-12','M-13'];
+const ABN={2:{SpO2:90},4:{P:124},8:{T:38.9},6:{SBP:168,DBP:98}};const OCC=[0,1,2,3,4,6,8,10];
+// 虛構資料:藥物[床,時段,藥名索引,指定劑量]、血糖、治療
+const DRUGS=['Medix-A','Corvan-B','Neolin-C'];const BG={1:188,4:262,6:134,10:315};
+const SLOT={am:['早藥',480,600],noon:['午藥',690,810],pm:['下午藥',870,960]};
+const MEDS=[[0,'am',0,10],[1,'am',1,20],[1,'pm',2,5],[2,'noon',2,5],[3,'noon',1,25],[4,'am',0,5],[4,'noon',0,5],[6,'am',2,10],[8,'noon',1,20],[8,'pm',1,20],[10,'am',2,5],[10,'pm',0,10]];
+const TRT=[[2,'dressing'],[8,'dressing'],[3,'steam'],[6,'steam'],[10,'steam']];
+const SCALE=[[150,0],[200,2],[250,4],[300,6],[1e9,8]];const scaleDose=bg=>SCALE.find(r=>bg<=r[0])[1];
+const fmt=m=>{m=Math.floor(m);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+// ===== 規則模組:生命徵象判定 =====
+const PB={};function vitalsOf(i){i=PB[i]??i;const v={T:36.5+(i%3)*.2,P:72+i*2,R:16+(i%3),SBP:112+i,DBP:72+(i%4)*2,SpO2:97-(i%3)};return Object.assign(v,ABN[i]||{})}
+function judgeVitals(v){const o=[];for(const k of ['T','P','R','SpO2']){if(v[k]<REF[k][0]||v[k]>REF[k][1])o.push(k)}
+ if(v.SBP<REF.SBP[0]||v.SBP>REF.SBP[1])o.push('SBP');if(v.DBP<REF.DBP[0]||v.DBP>REF.DBP[1])o.push('DBP');return o}
+// ===== 遊戲狀態 =====
+const S={t:CFG.start,mode:1,hidden:false,modal:false,phase:'play',stress:0,score:0,log:[],tasks:[],nav:false,over:false,errors:0,blocks:0,lt:450,stam:100,hung:0,ate:null,mealAt:0,intr:0,w1:0,w2:0,started:false,deaths:[]};
+function addLog(pts,why){S.score+=pts;S.log.push({t:S.t,pts,why});if(pts)pop(pts)}
+function mk(id,type,bed,title,due,pri){const o={id,type,bed,title,tag:title.replace(/^\d+ 床 /,''),due,pri,status:'locked',cost:CFG.cost[type]||5,late:false,overdue:false,result:''};S.tasks.push(o);return o}
+mk('clockin','clockin',null,'上班打卡(護理站)',null,9);mk('handover','handover',null,'晨間交班核對(護理站)',510,8);
+for(let i=0;i<13;i++){const o=mk('v'+i,'vitals',i,(i+1)+' 床 生命徵象',570+(i%3)*30,5);if(!OCC.includes(i))o.status='cancelled'}
+const lastS={};MEDS.forEach(([b,s,d,x])=>{const sl=SLOT[s];Object.assign(mk('m'+b+s,'med',b,(b+1)+' 床 '+sl[0],sl[2],6),{tag:sl[0]+' '+DRUGS[d]+' '+x+'mg',drug:DRUGS[d],dose:x,from:sl[1],slotName:sl[0],req:lastS[s]});lastS[s]='m'+b+s});
+Object.keys(BG).forEach(k=>{const b=+k;mk('g'+b,'glucose',b,(b+1)+' 床 血糖檢測',600,6);Object.assign(mk('i'+b,'insulin',b,(b+1)+' 床 胰島素(Sliding Scale)',630,7),{req:'g'+b})});
+TRT.forEach(([b,k])=>mk(k+b,k,b,(b+1)+' 床 '+(k==='dressing'?'傷口換藥':'蒸氣治療'),k==='dressing'?780:720,4));
+const CHIEFS=[{c:'70歲男性,主訴胸悶合併冒冷汗,自述像有石頭壓著(虛構案例)',lvl:2},{c:'扭傷腳踝,可自行走入,疼痛但生命徵象穩定(虛構案例)',lvl:4},{c:'高燒 39.5度合併意識改變,家屬代訴反應變遲鈍(虛構案例)',lvl:2},{c:'車禍外傷,前額撕裂傷合併少量出血(虛構案例)',lvl:3},{c:'腹瀉合併輕微脫水,活動力正常(虛構案例)',lvl:4},{c:'氣喘發作,呼吸喘合併端坐呼吸(虛構案例)',lvl:2}];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const CH=shuffle(CHIEFS).slice(0,3),TJIT=[560,720,890].map(t=>Math.max(470,Math.min(930,t+Math.round((Math.random()-.5)*30))));
+const KTASREF=['第 1 級・復甦急救(立即處理):心跳/呼吸停止、持續抽搐且無意識、嘴唇發青發紫、體溫>41°C或<32°C','第 2 級・危急(約等 10 分鐘):急性意識改變、持續胸悶胸痛合併冒冷汗、低血糖(<40)、外傷大量出血、高處墜落車禍被拋出、頭部撞擊曾昏迷','第 3 級・緊急(約等 30 分鐘):無法控制腹瀉嘔吐、外傷腫脹變形疑骨折脫臼、高血壓(收縮>200或舒張>110)但無症狀','第 4 級・次緊急(約等 60 分鐘):局部蜂窩性組織炎、急性咳嗽但無發燒、發燒但無其他不適、反覆疼痛或暈眩','第 5 級・非緊急(約等 120 分鐘):慢性噁心嘔吐打嗝、輕微擦傷瘀青、輕微腹瀉無脫水跡象'];
+const EVT=[
+{id:'vo',ev:'vo',t:'口頭醫囑:3 床加藥',loc:'station',at:550,lim:40,pri:8,fp:-6},
+{id:'cb1',ev:'cb1',t:'🚨 Code Blue:取急救車',loc:'crash',at:620,lim:30,pri:20,fp:-10,p:5},
+{id:'cb2',ev:'cb2',t:'🚨 Code Blue:9 床急救',bed:8,at:620,lim:30,pri:20,fp:-20,req:'cb1',p:15,c:8},
+{id:'cv',ev:'cv',t:'危急值通報:7 床',loc:'station',at:675,lim:15,pri:15,fp:-12,p:12,c:4},
+{id:'dcCall',ev:'dcCall',t:'內科病房交班電話:11 床轉出',loc:'station',at:680,lim:45,pri:10,fp:-8,p:10,c:6},
+{id:'dc',ev:'dc',t:'11 床辦理出院手續',bed:10,at:700,lim:80,pri:6,fp:-6,p:8,c:12,req:'dcCall'},
+{id:'bell',ev:'step',t:'呼叫鈴:4 床',bed:3,at:720,lim:50,pri:4,fp:-4,p:5,c:4,steps:['詢問需求','協助並記錄']},
+{id:'fam',ev:'fam',t:'家屬詢問:7 床',bed:6,at:800,lim:40,pri:7,fp:-5},
+{id:'fam2',ev:'fam2',t:'激動家屬:3 床',bed:2,at:880,lim:25,pri:12,fp:-8},
+{id:'fam3',ev:'fam3',t:'家屬催促:5 床',bed:4,at:760,lim:30,pri:9,fp:-6},
+{id:'tr',ev:'tr',t:'轉床:4 床轉至觀察床',bed:3,at:810,lim:60,pri:9,fp:-8,p:10,c:12},
+{id:'triage1',ev:'triage',t:'🚑 救護車送達:檢傷評估',loc:'triage',at:TJIT[0],lim:20,pri:CH[0].lvl<=2?12:6,fp:-8,p:8,c:4,chief:CH[0].c,lvl:CH[0].lvl},
+{id:'triage2',ev:'triage',t:'🚑 救護車送達:檢傷評估',loc:'triage',at:TJIT[1],lim:20,pri:CH[1].lvl<=2?12:6,fp:-8,p:8,c:4,chief:CH[1].c,lvl:CH[1].lvl},
+{id:'triage3',ev:'triage',t:'🚑 救護車送達:檢傷評估',loc:'triage',at:TJIT[2],lim:20,pri:CH[2].lvl<=2?12:6,fp:-8,p:8,c:4,chief:CH[2].c,lvl:CH[2].lvl},
+{id:'iv',ev:'step',t:'點滴空瓶:5 床',bed:4,at:850,lim:20,pri:9,fp:-6,p:6,c:4,steps:['關閉點滴並更換藥袋','確認滴速與管路']}];
+EVT.forEach(e=>Object.assign(mk(e.id,'event',e.bed==null?null:e.bed,e.t,e.at+e.lim,e.pri),{ev:e.ev,from:e.at,loc:e.loc,fp:e.fp,pts:e.p,req:e.req,steps:e.steps,cost:e.c||5,chief:e.chief,lvl:e.lvl}));
+mk('endshift','endshift',null,'班末交班與文書(護理站)',null,7);
+mk('io','doc',null,'24 小時出入量統計',null,9);Object.assign(mk('fall','doc',null,'防跌評估單',null,9),{req:'io'});Object.assign(mk('unfin','doc',null,'當班未完成任務確認',null,9),{req:'fall'});
+const T=id=>S.tasks.find(x=>x.id===id);
+// 狀態轉換統一入口
+function setStatus(t,s){if(S.over||t.status===s||t.status==='completed'||t.status==='cancelled')return;t.status=s;}
+function refreshLocks(){const c=T('clockin').status==='completed',h=T('handover').status==='completed';
+ if(c&&T('handover').status==='locked')setStatus(T('handover'),'available');
+ if(h)S.tasks.forEach(t=>{if(t.status==='locked'&&!['clockin','handover','endshift','event','doc'].includes(t.type)&&(t.type==='vitals'?(t.bed===0||['completed','cancelled'].includes(T('v'+(t.bed-1)).status)):S.tasks.filter(x=>x.type==='vitals'&&!x.nv).every(x=>['completed','cancelled'].includes(x.status)))&&(!t.from||S.t>=t.from)&&(!t.req||['completed','cancelled'].includes(T(t.req).status)))setStatus(t,'available')});
+ if(S.phase==='ending'){S.tasks.forEach(t=>{if(t.type==='doc'&&t.status==='locked'&&(!t.req||T(t.req).status==='completed'))setStatus(t,'available')});if(T('endshift').status==='locked'&&T('unfin').status==='completed')setStatus(T('endshift'),'available')}
+ if(!c&&T('clockin').status==='locked')setStatus(T('clockin'),'available');S.tasks.forEach(t=>{if(t.type==='event'&&t.status==='locked'&&S.t>=t.from&&(!t.req||T(t.req).status==='completed')){setStatus(t,'available');alert_(t)}});}
+function checkDeadlines(){S.tasks.forEach(t=>{if(t.type==='event'){if((t.status==='available'||(t.status==='locked'&&S.t>=t.from))&&S.t>t.due){setStatus(t,'expired');addLog(t.fp||-6,t.tag+' 逾期未處理');S.errors++;if(t.ev==='cb1'||t.ev==='cb2')killPatient(8,'Code Blue 未在時限內處理')}return}if(t.due&&t.status==='available'&&S.t>t.due&&!t.overdue){t.overdue=true;addLog(CFG.pts.overdue,t.title+' 逾期')}})}
+function killPatient(b,reason){if(bedState[b]==='deceased')return;bedState[b]='deceased';setOcc(b,true);pats[b].material.color.set(0x55555f);bedMesh[b].material.color.set(0x333333);S.tasks.forEach(x=>{if(x.bed===b&&!['completed','cancelled'].includes(x.status)&&x.ev!=='dc'&&x.ev!=='adm')setStatus(x,'cancelled')});S.deaths.push({bed:b,t:S.t,reason});addLog(-25,(b+1)+' 床搜救無效,宣告死亡:'+reason);S.errors++;S.stress=Math.min(100,S.stress+10);toast('💔 '+(b+1)+' 床搜救無效,已宣告死亡')}
+function advance(min){if(S.over)return;S.t=Math.min(CFG.end,S.t+min*(S.stam<30?1.2:1)*(S.stress>80?1.1:1));onTime()}
+function onTime(){vit();checkDeadlines();if(S.t>=CFG.end&&S.phase==='play'){S.phase='ending';S.mode=0;setMode(0);refreshLocks();toast('16:00 到了:請回護理站完成班末交班')}}
+function complete(t,pts,why,result){if(t.status==='completed')return;t.status='completed';t.result=result||'';addLog(pts,t.title+':'+why);advance(t.cost);refreshLocks()}
+function toast(m){const h=document.getElementById('hint');h.innerHTML='<span>'+m+'</span>';setTimeout(()=>{if(h.innerText===m)h.innerHTML=''},3500)}
+// ===== 3D 場景 =====
+const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(1.5,devicePixelRatio));document.body.prepend(R.domElement);
+const sc=new THREE.Scene();sc.background=new THREE.Color(0x0c141c);
+const cam=new THREE.PerspectiveCamera(50,1,.1,100);
+sc.add(new THREE.HemisphereLight(0xffffff,0x88a0a4,.9));const dl=new THREE.DirectionalLight(0xfff0d8,.85);dl.position.set(8,20,6);sc.add(dl);
+const box=(w,h,d,c,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c}));m.position.set(x,y,z);sc.add(m);return m};
+const W=20,D=18;box(W*2,.1,D*2,0xf4f7f7,0,-.05,0);box(W*2,.02,3.4,0xc9dfe0,0,0,0.0);
+[[0,-D,W*2,.4],[0,D,W*2,.4],[-W,0,.4,D*2],[W,0,.4,D*2]].forEach(([x,z,w,d])=>box(w,2.4,d,0xa9c4c8,x,1.2,z));
+const OB=[],IT=[],lightBulbs=[];
+function label(txt,x,z,col,sz){const c=document.createElement('canvas');c.width=128;c.height=64;const g=c.getContext('2d');g.fillStyle=col||'#0d8a8a';g.fillRect(0,0,128,64);g.fillStyle='#fff';g.font='bold '+(sz||34)+'px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,64,34);
+ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));s.scale.set(1.6,.8,1);s.position.set(x,2.6,z);sc.add(s);return s}
+function addIt(type,id,x,z,w,d,name){OB.push({x,z,w,d});IT.push({type,id,x,z,w,d,name})}
+const bedPos=[];for(let i=0;i<7;i++)bedPos.push([-18+i*6,-8]);for(let i=0;i<6;i++)bedPos.push([-15+i*6,8]);
+const bedMesh=[],pats=[],bedState=Array.from({length:13},(_,i)=>OCC.includes(i)?'occupied':'empty');
+bedPos.forEach(([x,z],i)=>{const g=box(1.5,.5,2.6,0x9ac7d1,x,.3,z);box(1.3,.12,2.2,0xffffff,x,.62,z);
+ const pat=new THREE.Mesh(new THREE.SphereGeometry(.28,12,10),new THREE.MeshLambertMaterial({color:0xf2c9a0}));pat.position.set(x,.9,z+(z<0?-.8:.8));sc.add(pat);pats[i]=pat;
+ pats[i].userData.b=box(.9,.25,1.3,0xe8a38f,x,.8,z+(z<0?.1:-.1));label(String(i+1),x,z+(z<0?1.7:-1.7),'#0d8a8a');bedMesh.push(g);addIt('bed',i,x,z,1.5,2.6,(i+1)+' 床')});
+box(8,1,1.8,0x6b8e96,0,.5,0);box(8.2,.12,2,0xdfe7e8,0,1.02,0);label('護理站',0,0,'#16323a',26);addIt('station','st',0,0,8,1.8,'護理站');
+
+function mkCart(k,x,z,name,col,w,d){const g=new THREE.Group();g.position.set(x,0,z);sc.add(g);const B=(w,h,d,c)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:c})),add=(m,px,py,pz)=>{m.position.set(px,py,pz);g.add(m);return m};
+ if(k==='vs'){add(new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1.3,8),new THREE.MeshLambertMaterial({color:0xaab6ba})),0,.75,0);for(let i=0;i<5;i++){const a=B(.55,.06,.1,0xb8c0c4);a.rotation.y=i*1.2566;add(a,Math.cos(i*1.2566)*.25,.1,-Math.sin(i*1.2566)*.25)}
+  add(B(.5,.18,.4,0xc9d3d8),0,.9,0);add(B(.7,.6,.45,0x1f5fbf),0,1.6,0);const c=document.createElement('canvas');c.width=128;c.height=96;const q=c.getContext('2d');q.fillStyle='#000';q.fillRect(0,0,128,96);q.fillStyle='#ff3b3b';q.font='bold 30px monospace';q.fillText('120',8,34);q.fillText('80',8,70);q.fillStyle='#3be070';q.fillText('63',80,34);q.fillStyle='#ffe14d';q.fillText('99',80,70);add(new THREE.Mesh(new THREE.PlaneGeometry(.5,.38),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c)})),0,1.62,.231)}
+ else{add(B(w,.9,d,col),0,.55,0);add(B(w+.06,.06,d+.06,0xdfe7e8),0,1.03,0);for(let i=0;i<3;i++)add(B(w*.9,.03,.03,0x223344),0,.3+i*.25,d/2+.02);if(k==='crash')add(B(.5,.2,.4,0x222222),0,1.16,0);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>add(new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,.08,8),new THREE.MeshLambertMaterial({color:0x222222})),a*w*.4,.05,b*d*.4))}
+ const l=label(name,x,z,'#'+col.toString(16).padStart(6,'0'),26);addIt(k,k,x,z,w,d,name);return{x,z,m:g,l,ob:OB[OB.length-1],it:IT[IT.length-1],n:name}}
+const CART=mkCart('crash',13,0,'急救車',0xc9403a,1.2,1),TX=mkCart('tx',-9,-1.8,'治療車',0x2f8f7f,1.2,.8),VS=mkCart('vs',-9,1.8,'生理監視器',0x1f5fbf,1,1);let HELD=null;[[-17.5,-2.5,5,.3],[-17.5,2.5,5,.3],[-15,-1.75,.3,1.5],[-15,1.75,.3,1.5]].forEach(([x,z,w,d])=>{box(w,2.4,d,0x6f8a96,x,1.2,z);OB.push({x,z,w,d})});box(.3,.5,2,0x6f8a96,-15,2.15,0);box(1.6,.9,1.6,0xd9b26b,-18.5,.45,0);label('休息室',-17,0,'#b07a1f',26);addIt('rest','rest',-18.5,0,1.6,1.6,'休息室');
+// 病房與走廊之間隔間牆(留通道缺口)
+[[-11,-11,18,.4],[11,-11,18,.4]].forEach(([x,z,w,d])=>{box(w,2.4,d,0xa9c4c8,x,1.2,z);OB.push({x,z,w,d})});
+[-1.2,1.2].forEach(dx=>{const d=box(1.1,1.9,.08,0x9fd6e6,dx,1,-11);d.material.transparent=true;d.material.opacity=.55});
+box(.9,.5,.08,0x6f8a96,0,1.5,-11.02);box(.5,.08,.08,0xffffff,0,1.5,-11.03);box(.08,.5,.08,0xffffff,0,1.5,-11.03);
+// 通道(連接病房與檢傷大廳)
+box(4.4,.02,2.6,0xc9dfe0,0,.01,-12.3);label('通道',0,-12.3,'#0d8a8a',20);
+[[-2.2,-12.3,.4,2.6],[2.2,-12.3,.4,2.6]].forEach(([x,z,w,d])=>{box(w,2.4,d,0x9fd6e6,x,1.2,z);OB.push({x,z,w,d})});
+[[-4.1,-13.6,3.8,.4],[4.1,-13.6,3.8,.4]].forEach(([x,z,w,d])=>{box(w,2.4,d,0xa9c4c8,x,1.2,z);OB.push({x,z,w,d})});
+[[-6,-15.7,.4,4.2],[6,-15.7,.4,4.2]].forEach(([x,z,w,d])=>{box(w,2.4,d,0xa9c4c8,x,1.2,z);OB.push({x,z,w,d})});
+// 檢傷站(獨立大廳,不貼床位)
+box(2,1,.6,0xffffff,0,.5,-15.7);box(2,.08,.62,0xc9403a,0,1.02,-15.7);box(.9,.5,.08,0xc9403a,0,1.5,-15.95);box(.5,.08,.08,0xffffff,0,1.5,-15.96);box(.08,.5,.08,0xffffff,0,1.5,-15.96);label('檢傷站',0,-15.7,'#c9403a',24);addIt('triage','triage',0,-15.7,2,.8,'檢傷站');
+box(5.6,.06,2,0x3a4a52,0,.03,-16.1);
+[-2.6,2.6].forEach(dx=>box(.15,2.1,.3,0x6f8a96,dx,1.05,-17.5));box(5,.3,.3,0x6f8a96,0,2.15,-17.5);
+[-1.2,1.2].forEach(dx=>{const d=box(1.1,1.9,.08,0x9fd6e6,dx,1,-17.45);d.material.transparent=true;d.material.opacity=.55});
+box(2.6,1.2,4.2,0xf4f4f4,0,.6,-21);box(2.6,.2,4.2,0xd9403a,0,1.25,-21);box(.9,.5,.08,0xd9403a,0,1.9,-18.9);box(.5,.08,.08,0xffffff,0,1.9,-18.91);box(.08,.5,.08,0xffffff,0,1.9,-18.91);
+['#ff3030','#3060ff'].forEach((c,i)=>{const lt=new THREE.Mesh(new THREE.SphereGeometry(.1,8,8),new THREE.MeshBasicMaterial({color:c}));lt.position.set(i?.5:-.5,1.42,-18.9);sc.add(lt);lightBulbs.push(lt)});
+label('🚑 救護車',0,-22.2,'#c9403a',22);
+const gh=new THREE.GridHelper(40,20,0xcfdcde,0xdfe8ea);gh.scale.z=.9;gh.position.y=.01;sc.add(gh);
+[-4.5,4.5].forEach(z=>box(W*2-1,.02,.12,0xf0c040,0,.02,z));box(W*2,.5,.05,0x7fb5bf,0,1.3,-D+.25);box(W*2,.5,.05,0x7fb5bf,0,1.3,D-.25);
+const pm=new THREE.MeshLambertMaterial({color:0xaab6ba});
+bedPos.forEach(([x,z])=>{const s=z<0?-1:1;box(.5,.4,.3,0x1b2a30,x+1.1,1.2,z+s*1.3);box(.4,.25,.02,0x39d98a,x+1.1,1.22,z+s*1.13);const p=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1.8,6),pm);p.position.set(x-1.1,.9,z+s*.9);sc.add(p);box(.18,.3,.1,0xcfe9f5,x-1.1,1.7,z+s*.9)});
+box(.9,.5,.08,0x1b2a30,-2,1.4,-.3);box(.9,.5,.08,0x1b2a30,2,1.4,-.3);
+const setOcc=(i,on)=>{pats[i].visible=on;pats[i].userData.b.visible=on};bedState.forEach((s,i)=>{if(s==='empty'){setOcc(i,false);bedMesh[i].material.color.set(0xd9d9d9)}});
+bedPos.forEach(([x,z])=>{const s=z<0?-1:1;box(1.5,.8,.1,0x8a6a4a,x,.8,z+s*1.35);box(.6,.12,.4,0xffffff,x,.74,z+s*1.0);[-1,1].forEach(a=>box(.04,.3,1.6,0xb8c0c4,x+a*.78,.75,z))});
+bedPos.forEach(([x,z],i)=>{if(i===6||i===12)return;const c=box(.08,2,2.4,0x4b88a8,x+3,1,z);c.material.transparent=true;c.material.opacity=.7;OB.push({x:x+3,z,w:.1,d:2.4})});
+const nurse=new THREE.Group();const nb=new THREE.Mesh(new THREE.CylinderGeometry(.3,.35,1,12),new THREE.MeshLambertMaterial({color:0xeef3f6}));nb.position.y=.55;nurse.add(nb);
+const nh=new THREE.Mesh(new THREE.SphereGeometry(.26,12,10),new THREE.MeshLambertMaterial({color:0xf2c9a0}));nh.position.y=1.25;nurse.add(nh);
+const nose=new THREE.Mesh(new THREE.ConeGeometry(.14,.4,8),new THREE.MeshLambertMaterial({color:0xffd34d}));nose.rotation.x=Math.PI/2;nose.position.set(0,.8,.45);nurse.add(nose);
+const nm=(g,c,x,y,z)=>{const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c}));m.position.set(x,y,z);nurse.add(m)};
+nm(new THREE.SphereGeometry(.28,10,8),0x2a1a12,0,1.32,-.04);[-.38,.38].forEach(s=>nm(new THREE.CylinderGeometry(.07,.07,.6,6),0xeef3f6,s,.6,0));nm(new THREE.BoxGeometry(.5,.12,.04),0x3fe0c5,0,.8,.32);
+nurse.position.set(0,0,4);sc.add(nurse);
+const ring=new THREE.Mesh(new THREE.RingGeometry(1.1,1.35,32),new THREE.MeshBasicMaterial({color:0xf0a020,side:2}));ring.rotation.x=-Math.PI/2;ring.position.y=.08;sc.add(ring);
+const bcn=new THREE.Mesh(new THREE.ConeGeometry(.25,.5,8),new THREE.MeshBasicMaterial({color:0xff2a2a}));bcn.visible=false;sc.add(bcn);
+const gl=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineBasicMaterial({color:0xf0a020}));gl.frustumCulled=false;gl.visible=false;sc.add(gl);
+const exc=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.fillStyle='#f5a623';g.beginPath();g.arc(32,32,28,0,7);g.fill();g.fillStyle='#fff';g.font='bold 40px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('!',32,34);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c)}));sc.add(s);return s})();
+// ===== 輸入 =====
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=1;if(e.key.toLowerCase()==='e')doAct()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=0);
+let jx=0,jz=0;const joy=document.getElementById('joy'),knob=document.getElementById('knob');
+function jm(e){const t=e.touches?e.touches[0]:e,r=joy.getBoundingClientRect();let dx=t.clientX-r.left-65,dy=t.clientY-r.top-65;const l=Math.hypot(dx,dy),m=45;if(l>m){dx*=m/l;dy*=m/l}
+ jx=dx/m;jz=dy/m;knob.style.transform=`translate(${dx}px,${dy}px)`;e.preventDefault()}
+function je(){jx=jz=0;knob.style.transform=''}
+joy.addEventListener('touchstart',jm,{passive:false});joy.addEventListener('touchmove',jm,{passive:false});joy.addEventListener('touchend',je);
+joy.addEventListener('pointerdown',e=>{joy.setPointerCapture(e.pointerId);joy._d=1;jm(e)});joy.addEventListener('pointermove',e=>{if(joy._d)jm(e)});joy.addEventListener('pointerup',()=>{joy._d=0;je()});
+// ===== 碰撞 =====
+const hit=(x,z)=>{if(Math.abs(x)>W-.6-CFG.pr||Math.abs(z)>D-.6-CFG.pr)return true;
+ return OB.some(o=>{const cx=Math.max(o.x-o.w/2,Math.min(x,o.x+o.w/2)),cz=Math.max(o.z-o.d/2,Math.min(z,o.z+o.d/2));return Math.hypot(x-cx,z-cz)<CFG.pr})};
+const hitR=(x,z,r)=>{if(Math.abs(x)>W-.6-r||Math.abs(z)>D-.6-r)return true;return OB.some(o=>{const cx=Math.max(o.x-o.w/2,Math.min(x,o.x+o.w/2)),cz=Math.max(o.z-o.d/2,Math.min(z,o.z+o.d/2));return Math.hypot(x-cx,z-cz)<r})};
+function grab(c){if(HELD)drop();HELD=c;c.ob.x=c.ob.z=999}function drop(){if(!HELD)return;HELD.ob.x=HELD.x;HELD.ob.z=HELD.z;HELD=null}const near=(c,b)=>Math.hypot(c.x-IT[b].x,c.z-IT[b].z)<=3.6;
+function moveCart(){const c=HELD,p=nurse.position,r=nurse.rotation.y,cx=p.x+Math.sin(r)*1.35,cz=p.z+Math.cos(r)*1.35;if(hitR(cx,cz,.65))return false;c.x=cx;c.z=cz;c.m.position.set(cx,0,cz);c.m.rotation.y=r+Math.PI;c.l.position.set(cx,2.6,cz);c.it.x=cx;c.it.z=cz;return true}
+function cartAct(k){if(S.modal||S.over)return;const c={crash:CART,tx:TX,vs:VS}[k];if(HELD===c){drop();return toast('已放開'+c.n)}grab(c);toast('推著'+c.n+'(移動較慢,再按 E 放開)')}
+const dist=(it,p)=>{const cx=Math.max(it.x-it.w/2,Math.min(p.x,it.x+it.w/2)),cz=Math.max(it.z-it.d/2,Math.min(p.z,it.z+it.d/2));return Math.hypot(p.x-cx,p.z-cz)};
+function nearest(){let b=null,bd=1e9;IT.forEach(it=>{const d=dist(it,nurse.position);if(d<=CFG.reach&&d<bd){b=it;bd=d}});return b}
+// ===== 互動 / 彈窗 =====
+const mod=document.getElementById('modal'),bx=document.getElementById('box');
+function open(h){S.modal=true;bx.innerHTML=h;mod.style.display='flex'}
+function close(){S.modal=false;S.cur=null;mod.style.display='none'}
+window.close_=close;
+function doAct(){if(S.modal||S.over||!S.started)return;const it=nearest();if(!it)return;
+ if(it.type==='station')stationUI();else if(it.type==='bed')bedUI(it.id);else if(locEv(it.type))evUI(locEv(it.type));else if(it.type==='rest')restUI();else if(['crash','tx','vs'].includes(it.type))cartAct(it.type);
+ else if(it.type==='triage')open(`<h3>檢傷站</h3><p>目前沒有待檢傷的病人。</p><div class="row"><button onclick="close_()">關閉</button></div>`);else open(`<h3>${it.name}</h3><p>此區域目前沒有可執行的任務。</p><div class="row"><button onclick="close_()">關閉</button></div>`)}
+function stationUI(sk){const ev=locEv('station');if(ev&&!sk&&T('clockin').status==='completed')return open(`<h3>護理站</h3><div class="row"><button class="on" onclick="evUI(T('${ev.id}'))">⚠ ${ev.tag}</button></div><div class="row"><button onclick="stationUI(1)">交班/文書</button></div>`);const c=T('clockin'),h=T('handover'),e=T('endshift');
+ if(c.status==='available'){return open(`<h3>上班打卡</h3><p>${fmt(S.t)} 打卡後須進行交班。</p><div class="row"><button onclick="close_()">取消</button><button class="on" onclick="doClock()">打卡</button></div>`)}
+ if(h.status==='available'){return open(`<h3>晨間交班</h3><p>逐床核對(不可全選),全部核對後醫囑才會確認、生命徵象任務才會建立。</p>${NAMES.map((n,i)=>bedState[i]!=='occupied'?'':`<label class="chk"><input type="checkbox" class="hc" onchange="hcUp()"> ${i+1} 床 ${n}:${ordText(i)}</label>`).join('')}<div class="row"><button onclick="close_()">稍後</button><button id="hok" class="on" disabled onclick="doHand()">確認交班(15 分)</button></div>`)}
+ const dd=S.tasks.find(t=>t.type==='doc'&&t.status==='available');if(dd)return docUI(dd);if(e.status==='available'){return open(`<h3>班末交班與文書</h3>${handRep()}<div class="row"><button onclick="close_()">取消</button><button class="on" onclick="doEnd()">送出並下班</button></div>`)}
+ open(`<h3>護理站</h3><p>${S.phase==='play'?'目前沒有可在護理站執行的任務。':'—'}</p><div class="row"><button onclick="close_()">關閉</button></div>`)}
+window.doClock=()=>{complete(T('clockin'),0,'已打卡');close();toast('已打卡,請交班')};
+window.hcUp=()=>{document.getElementById('hok').disabled=![...document.querySelectorAll('.hc')].every(x=>x.checked)};
+window.doHand=()=>{complete(T('handover'),CFG.pts.done,'交班核對完成');close();toast('醫囑已確認,生命徵象任務已建立')};
+const ordText=i=>S.tasks.filter(t=>t.bed===i&&t.type!=='event').map(t=>t.tag).join('、');
+const lockWhy=t=>{if(t.type==='event'||t.type==='assess'){if(t.status==='expired')return '已逾期失敗';if(S.phase!=='play')return '班次已結束';if(t.req&&T(t.req).status!=='completed')return '需先完成:'+T(t.req).tag;return ''}if(S.phase!=='play')return '班次已結束';if(T('handover').status!=='completed')return '尚未完成交班,醫囑未確認';if(t.type==='vitals'&&t.bed>0&&!['completed','cancelled'].includes(T('v'+(t.bed-1)).status))return '請依床號順序:先量 '+t.bed+' 床';if(t.type!=='vitals'){const vs=S.tasks.filter(x=>x.type==='vitals'&&!x.nv),dn=vs.filter(x=>x.status==='completed'||x.status==='cancelled').length;if(dn<vs.length)return '需先量完全部床生命徵象('+dn+'/'+vs.length+')'}if(t.type==='vitals'&&!near(VS,t.bed))return '請把生理監視器推到床旁(靠近監視器按 E 推車)';if((t.type==='med'||t.type==='insulin')&&!near(TX,t.bed))return '請把治療車推到床旁(靠近治療車按 E 推車)';if(t.from&&S.t<t.from)return '尚未到時間('+fmt(t.from)+' 起)';if(t.req&&!['completed','cancelled'].includes(T(t.req).status))return '需先完成(依床號順序):'+T(t.req).title;return ''};
+function bedUI(i){bedMenu(i)}
+function bedMenu(i){if(bedState[i]==='deceased'){const d=S.deaths.find(x=>x.bed===i);return open(`<h3>${i+1} 床</h3><p>此床病人搜救無效,${d?fmt(d.t):''} 宣告死亡。請聯繫醫師處理後續事宜(遊戲化簡化,非真實流程)。</p><div class="row"><button onclick="close_()">關閉</button></div>`)}
+ const ts=S.tasks.filter(t=>t.bed===i&&!['cancelled','expired'].includes(t.status)&&!(t.type==='event'&&t.status==='locked'));open(`<h3>${i+1} 床 ${bedState[i]==='occupied'?NAMES[i]:'(空床)'}</h3>${ts.map(t=>{const dn=t.status==='completed',w=dn?'':lockWhy(t);return `<div class="chk"><div style="flex:1"><b>${t.tag}</b><br><small class="${dn?'good':w?'err':''}">${dn?'已完成:'+t.result:w||'可執行・'+t.cost+' 分'+(t.due?'・期限 '+fmt(t.due):'')}</small></div>${dn?'':`<button onclick="runT('${t.id}')">執行</button>`}</div>`}).join('')}<div class="row"><button onclick="close_()">關閉</button></div>`)}
+window.runT=id=>{const t=T(id),w=lockWhy(t);if(w){S.blocks++;addLog(0,'違規嘗試被阻止:'+t.tag+'('+w+')');return toast('無法執行:'+w)}
+ S.cur=t;({vitals:()=>vitalsUI(t.bed),med:()=>medUI(t),insulin:()=>insUI(t),glucose:()=>stepUI(t,['手部消毒、核對病人','更換試紙與採血針','採血並讀取血糖機']),dressing:()=>stepUI(t,['評估傷口與滲液','依無菌流程換藥','記錄傷口狀況']),steam:()=>stepUI(t,['確認病人姿勢與設備','進行蒸氣治療','記錄治療反應']),event:()=>evUI(t),assess:()=>stepUI(t,['核對身分與手圈','入院評估','記錄入院資料'])})[t.type]()};
+let AC;function beep(f=880,d=.2,ty='sine',at=0){if(MUTE)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const s=AC.currentTime+at;g.gain.setValueAtTime(.08,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}catch(e){}}
+function pop(p){beep(p>0?1040:220,.12,p>0?'sine':'sawtooth');const d=document.createElement('div');d.className='pop';d.textContent=(p>0?'+':'')+p;d.style.color=p>0?'#2f9e63':'#c9403a';document.body.appendChild(d);setTimeout(()=>d.remove(),1200)}
+function click_(){beep(640,.035,'sine')}
+document.addEventListener('click',e=>{if(e.target&&e.target.tagName==='BUTTON')click_()},true);
+let bgm=null;
+function devTone(f,d,ty,vol,pan){if(MUTE)return;AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;const p=AC.createStereoPanner?AC.createStereoPanner():null;o.connect(g);if(p){g.connect(p);p.connect(AC.destination);p.pan.value=pan||0}else g.connect(AC.destination);const s=AC.currentTime;g.gain.setValueAtTime(vol,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}
+function startBGM(){if(bgm||MUTE)return;
+ const ivs=[
+  setInterval(()=>devTone(880,.07,'sine',.09,-.3),880),
+  setInterval(()=>devTone(660,.1,'sine',.06,.4),1300),
+  setInterval(()=>devTone(1400,.03,'square',.03,-.6),2300),
+  setInterval(()=>{if(Math.random()<.5)return;devTone(500,.05,'square',.04,.2);setTimeout(()=>devTone(500,.05,'square',.04,.2),140)},6000),
+  setInterval(()=>{[0,.18,.36].forEach((a,i)=>setTimeout(()=>devTone(1800-i*120,.04,'triangle',.03,.6),a*1000))},9000)
+ ];
+ AC=AC||new (window.AudioContext||window.webkitAudioContext)();const wg=AC.createGain();wg.gain.value=0;wg.connect(AC.destination);const wo=AC.createOscillator();wo.type='sine';wo.frequency.value=90;wo.connect(wg);wo.start();
+ const lfo=AC.createOscillator();lfo.frequency.value=.15;const lg=AC.createGain();lg.gain.value=.002;lfo.connect(lg);lg.connect(wg.gain);lfo.start();
+ bgm={ivs,os:[wo,lfo]}}
+function stopBGM(){if(!bgm)return;bgm.ivs.forEach(clearInterval);bgm.os.forEach(o=>{try{o.stop()}catch(e){}});bgm=null}
+function siren(){if(MUTE)return;AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.connect(g);g.connect(AC.destination);g.gain.value=.055;const t0=AC.currentTime;for(let i=0;i<6;i++)o.frequency.setValueAtTime(i%2?500:950,t0+i*.35);o.start(t0);o.stop(t0+2.1)}
+function ring_(){if(MUTE)return;[0,.3].forEach(a=>{beep(1000,.12,'square',a);beep(1000,.12,'square',a+.15)})}
+function ding(){if(MUTE)return;beep(1300,.15,'sine',0);beep(1000,.2,'sine',.12)}
+function alert_(t){if(S.over)return;
+ const force=['cb1','bell','fam','fam2','fam3'].includes(t.id)||(S.cur&&t.pri>S.cur.pri);
+ if(t.ev==='triage')siren();
+ else if(t.id==='dcCall'||t.id==='cv')ring_();
+ else if(t.id==='bell')ding();
+ else if(t.id==='cb1'||t.id==='fam2')[0,.3,.6].forEach(a=>{beep(880,.2,'square',a);beep(660,.2,'square',a+.15)});else beep(880,.25,'triangle');
+ const b=document.body;b.style.boxShadow='inset 0 0 40px 10px #c9403a';setTimeout(()=>b.style.boxShadow='',900);
+ if(!force)return toast((t.ev==='triage'?'🚑 救護車送達:':'⚠ 新事件:')+t.tag);
+ S.intr++;const was=S.cur&&S.cur!==t?S.cur:null;close();jx=jz=0;if(t.id==='cb1'){S.nav=true;document.getElementById('nav').classList.add('on');S.stress=Math.min(100,S.stress+15)}
+ if(was)toast('⚠ 更緊急事件插隊,暫停:'+was.tag);
+ if(t.id.startsWith('fam')){t.force=1;return evUI(t)}
+ if(t.id==='cb1'||t.id==='bell'){const cb=t.id==='cb1';return open(`<h3>${cb?'🚨 CODE BLUE':'🔔 '+t.tag}</h3><p>${cb?'9 床病人無反應!請立即前往急救區完成急救車準備並推往 9 床(車未到位前有時限;到床後開始的急救過程本身不計時,可依流程完成)。手邊工作被強制中斷。':'4 床病人按呼叫鈴。可立刻去,或先完成手邊工作(壓力上升)。'}</p><div class="row"><button class="on" onclick="close_()">立刻前往</button>${cb?'':'<button onclick="S.stress=Math.min(100,S.stress+6);close_()">先完成手邊工作</button>'}</div>`)}
+ evUI(t)}
+const locEv=l=>S.tasks.find(t=>t.type==='event'&&t.loc===l&&t.status==='available'&&!lockWhy(t));
+window.backT=id=>{const t=T(id);t.bed!=null?bedMenu(t.bed):close()};
+function releaseBed(b){bedState[b]='empty';setOcc(b,false);bedMesh[b].material.color.set(0xd9d9d9);S.tasks.forEach(x=>{if(x.bed===b&&x.ev!=='dc'&&x.ev!=='adm'&&['locked','available'].includes(x.status))setStatus(x,'cancelled')})}
+function choiceUI(t,txt,o){t.opts=o;open(`<h3>${t.tag}</h3><p>${txt}</p>${o.map((x,i)=>`<div class="row"><button onclick="chGo('${t.id}',${i})">${x[0]}</button></div>`).join('')}${t.force?'':'<div class="row"><button onclick="close_()">稍後處理</button></div>'}`)}
+window.chGo=(id,i)=>{const t=T(id),x=t.opts[i];if(x[5])S.errors++;S.stam=Math.max(0,S.stam-(x[4]>8?6:2));t.cost=x[2];S.stress=Math.min(100,Math.max(0,S.stress+(x[4]||0)));complete(t,x[1],x[3],x[3]);close();toast(x[3])};
+function evUI(t){S.cur=t;const e=t.ev;
+ if(e==='step')return stepUI(t,t.steps);
+ if(e==='cb1')return stepUI(t,['確認事件床號與位置','取得急救車與除顫器(遊戲道具)','推車前往現場']);
+ if(e==='cb2'&&Math.hypot(CART.x-IT[8].x,CART.z-IT[8].z)>3.4)return open(`<h3>${t.tag}</h3><p class="err">急救車不在 9 床旁!請把急救車推過來(靠近急救車按 E 推車,到床旁再按 E 放開)。</p><div class="row"><button onclick="close_()">關閉</button></div>`);
+ if(e==='cb2')return cprUI(t);
+ if(e==='dc')return stepUI(t,['完成出院衛教與帶藥說明','確認出院手續已辦妥','整理並釋出床位']);
+ if(e==='vo')return choiceUI(t,'醫師口頭說:「3 床現在加 Corvan-B 10mg。」系統中尚無正式醫囑。(虛構)',[['暫停執行,請醫師先開立醫囑',10,2,'已要求開立正式醫囑',0,0],['複誦確認並請醫師補開立後再執行',6,3,'複誦確認並完成補開',0,0],['先照做,晚點補單',-15,2,'違規執行未確認醫囑',8,1]]);
+ if(e==='fam')return choiceUI(t,'7 床家屬焦慮地詢問:「為什麼還在等?他會不會有事?」',[['傾聽、說明等待原因與下一步',8,6,'家屬情緒緩和',-4,0],['簡短說明,請家屬稍後再談',3,2,'家屬仍有疑慮',6,0],['回答「現在很忙沒空」',-4,1,'家屬不滿升高',14,1]]);
+ if(e==='fam2')return choiceUI(t,'3 床家屬音量提高:「你們到底有沒有在看?再不處理我要投訴、找主任!」(虛構)',[['保持冷靜、同理並說明處置與等待原因',6,8,'家屬稍微冷靜',4,0],['請護理長或資深同仁協助處理',5,4,'已請求支援,壓力分攤',-2,0],['提醒院內規定並通知保全留意',4,3,'已通知保全,家屬情緒仍高',8,0],['大聲爭辯,說你也很忙',-8,2,'衝突升級',20,1]]);
+ if(e==='fam3')return choiceUI(t,'5 床家屬連按呼叫鈴:「為什麼別床先處理?我們也等很久了!」(虛構)',[['說明急診依病況緊急程度排序,並預告處理時間',7,5,'家屬理解了一些',2,0],['先看一下病人狀況再回覆',4,4,'確認病人狀況穩定',4,0],['請家屬自己去問櫃台',-5,1,'家屬更加不滿',12,1]]);
+ if(e==='triage'){if(t.ktas==null)return open(`<h3>${t.tag}</h3><p>🚑 檢傷站待評估(虛構簡化流程,非真實教學案例):</p><p>「${t.chief}」</p><p>請判斷檢傷分級:</p>${KTASREF.map((r,i)=>`<div class="row"><button onclick="ktasGo('${t.id}',${i+1})" style="text-align:left;line-height:1.4">${r}</button></div>`).join('')}<div class="row"><button onclick="close_()">稍後</button></div>`);
+  const E=[...Array(13).keys()].filter(b=>bedState[b]==='empty');
+  return open(`<h3>${t.tag}</h3><p>已檢傷:第 ${t.ktas} 級。請分配床位:</p>${E.map(b=>`<div class="row"><button onclick="admGo('${t.id}',${b})">${b+1} 床</button></div>`).join('')||'<p class="err">目前沒有空床,急診滿床,請先處理出院或轉床。</p>'}<div class="row"><button onclick="close_()">稍後</button></div>`)}
+ if(e==='adm')return open(`<h3>${t.tag}</h3><p>急診檢傷送來新病人(虛構)。請選擇空床分配:</p>${[...Array(13).keys()].filter(b=>bedState[b]==='empty').map(b=>`<div class="row"><button onclick="admGo('${t.id}',${b})">${b+1} 床</button></div>`).join('')||'<p class="err">目前沒有空床,請先辦理出院。</p>'}<div class="row"><button onclick="close_()">稍後</button></div>`);
+ if(e==='tr'){const E=[...Array(13).keys()].filter(b=>bedState[b]==='empty');return open(`<h3>${t.tag}</h3><p>醫師指示:4 床病人轉至靠近護理站的觀察床(虛構)。</p>${['核對病人身分與手圈','攜帶病歷、藥物與管路(點滴、監視器)','已告知病人與家屬','已向新床位交代病況'].map(x=>`<label class="chk"><input type="checkbox" class="mc"> ${x}</label>`).join('')}<label>轉入床位 <select id="sd"><option value="">請選擇</option>${E.map(b=>`<option value="${b}">${b+1} 床</option>`).join('')}</select></label><p id="me" class="err"></p><div class="row"><button onclick="close_()">稍後</button><button class="on" onclick="trGo('${t.id}')">執行轉床</button></div>`)}
+ if(e==='dcCall')return open(`<h3>${t.tag}</h3><p>11 床病人要轉往內科病房。請撥電話交班(虛構)。</p>${['病人身分與診斷','生命徵象與血糖狀況','管路、過敏與重要注意事項','已通知家屬'].map(x=>`<label class="chk"><input type="checkbox" class="mc"> 已報告:${x}</label>`).join('')}<label class="chk"><input type="checkbox" class="mc"> 對方已覆誦確認</label><label>撥打單位 <select id="sd"><option value="">請選擇</option><option>內科病房</option><option>加護病房</option><option>藥局</option></select></label><p id="me" class="err"></p><div class="row"><button onclick="close_()">稍後</button><button class="on" onclick="cvGo('${t.id}')">撥打並記錄</button></div>`);
+ if(e==='cv')return open(`<h3>${t.tag}</h3><p>檢驗室來電:7 床 K⁺ 6.8(虛構危急值,期限 ${fmt(t.due)})</p><label class="chk"><input type="checkbox" class="mc"> 已覆誦檢驗值給來電者</label><label class="chk"><input type="checkbox" class="mc"> 已記錄接獲時間與來電者</label><label>通報對象 <select id="sd"><option value="">請選擇</option><option>主治醫師</option><option>藥師</option><option>家屬</option></select></label><p id="me" class="err"></p><div class="row"><button onclick="close_()">稍後</button><button class="on" onclick="cvGo('${t.id}')">通報並記錄</button></div>`)}
+window.cvGo=id=>{const t=T(id),d=document.getElementById('sd').value,m=document.getElementById('me');if(![...document.querySelectorAll('.mc')].every(c=>c.checked)){S.blocks++;addLog(0,'危急值通報核對未完成被阻止');return m.textContent='未完成必要核對,不能結案。'}
+ if(d!==(t.id==='cv'?'主治醫師':'內科病房')){S.blocks++;addLog(0,'危急值通報對象錯誤被阻止:'+d);return m.textContent='此對象不適合接收危急值通報,請重新選擇。'}
+ complete(t,t.pts,'完成雙向通報','醫師已覆誦確認');S.stress=Math.max(0,S.stress-8);close();toast('危急值通報完成')};
+function moveBed(a,b){bedState[a]='empty';bedState[b]='occupied';setOcc(a,false);setOcc(b,true);bedMesh[a].material.color.set(0xd9d9d9);bedMesh[b].material.color.set(0x9ac7d1);PB[b]=PB[a]??a;if(IO[a]){IO[b]=IO[a];delete IO[a]}if(BG[a]){BG[b]=BG[a];delete BG[a]}const va=T('v'+a),vb=T('v'+b);Object.assign(vb,{status:va.status,result:va.result,overdue:va.overdue,due:va.due,nv:true});va.status='cancelled';S.tasks.forEach(x=>{if(x.bed===a&&x.type!=='vitals'&&x.id!=='tr'&&x.status!=='cancelled')x.bed=b})}
+window.trGo=id=>{const t=T(id),d=document.getElementById('sd').value,m=document.getElementById('me');if(![...document.querySelectorAll('.mc')].every(c=>c.checked)||d===''){S.blocks++;addLog(0,'轉床核對未完成被阻止');return m.textContent='核對未完成或未選轉入床位,已阻止轉床。'}const a=t.bed,b=+d;if(bedState[b]!=='empty')return m.textContent='該床位已有病人。';moveBed(a,b);complete(t,t.pts,'完成轉床','4 床→'+(b+1)+' 床');S.stress=Math.max(0,S.stress-4);close();toast('轉床完成')};
+window.ktasGo=(id,k)=>{const t=T(id),d=k-t.lvl;t.ktas=k;let p=d===0?8:d<0?-2:-6;if(d>0)S.errors++;addLog(p,t.tag+' 檢傷'+k+'級('+(d===0?'判斷正確':d<0?'過度檢傷(安全但耗資源)':'低估緊急度(有風險)')+')');beep(d>0?300:900,.18,d>0?'sawtooth':'sine');evUI(t)};
+window.admGo=(id,b)=>{const t=T(id);if(bedState[b]!=='empty')return toast('床位已有病人');bedState[b]='occupied';setOcc(b,true);bedMesh[b].material.color.set(0x9ac7d1);const v=T('v'+b);if(v&&v.status==='cancelled'){v.status='available';v.due=S.t+60;v.overdue=false;v.nv=true}finish(t,'新病人入住 '+(b+1)+' 床');Object.assign(mk('a'+b,'assess',b,(b+1)+' 床 新病人入院評估',S.t+60,6),{tag:'新病人入院評估',status:'available',cost:10})};
+function finish(t,r){complete(t,t.pts||(t.overdue?CFG.pts.late:CFG.pts.done),t.overdue?'逾期完成':'完成',r);if(t.type==='event')S.stress=Math.max(0,S.stress-8);close();toast(t.tag+' 已完成')}
+function fail(t,why,r){S.errors++;complete(t,CFG.pts.major,why+'(重大錯誤)',r);close();toast('錯誤:'+why)}
+function stepUI(t,s){open(`<h3>${t.tag}</h3>${s.map(x=>`<label class="chk"><input type="checkbox" class="hc" onchange="hcUp()"> ${x}</label>`).join('')}<div class="row"><button onclick="backT('${t.id}')">返回</button><button id="hok" class="on" disabled onclick="stepDone('${t.id}')">完成(${t.cost} 分)</button></div>`)}
+window.stepDone=id=>{const t=T(id);if(t.ev==='cb1'){grab(CART);const c2=T('cb2');if(c2)c2.due=Math.max(c2.due,S.t+15)}if(t.ev==='dc')releaseBed(t.bed);finish(t,t.type==='glucose'?'血糖 '+BG[t.bed]+' mg/dL':'完成')};
+function medUI(t){let o=[t.dose/2,t.dose,t.dose*2];const r=t.bed%3;o=o.slice(r).concat(o.slice(0,r));open(`<h3>${t.tag}</h3><p>${NAMES[t.bed]}・${t.slotName} ${fmt(t.from)}–${fmt(t.due)}(虛構資料)</p><label>藥物 <select id="sd"><option value="">請選擇</option>${DRUGS.map(x=>`<option>${x}</option>`).join('')}</select></label><br><label>劑量 <select id="sx"><option value="">請選擇</option>${o.map(x=>`<option>${x}</option>`).join('')}</select> mg</label>${['病人姓名/床號','藥物名稱','劑量與時間'].map(x=>`<label class="chk"><input type="checkbox" class="mc"> 已核對:${x}</label>`).join('')}<p id="me" class="err"></p><div class="row"><button onclick="bedMenu(${t.bed})">返回</button><button class="on" onclick="medGo('${t.id}')">給藥</button></div>`)}
+window.medGo=id=>{const t=T(id),d=document.getElementById('sd').value,x=document.getElementById('sx').value;
+ if(![...document.querySelectorAll('.mc')].every(c=>c.checked)||!d||x===''){S.blocks++;addLog(0,'給藥核對未完成被阻止:'+t.tag);return document.getElementById('me').textContent='核對未全部勾選或未選藥物/劑量,已阻止給藥。'}
+ if(d!==t.drug)return fail(t,'給錯藥物','給錯藥:'+d);if(+x!==t.dose)return fail(t,'劑量錯誤','劑量錯誤:'+x+'mg');finish(t,d+' '+x+'mg')};
+function insUI(t){const bg=BG[t.bed];open(`<h3>${t.tag}</h3><p>血糖 <b>${bg}</b> mg/dL(已記錄)<br>虛構 Sliding Scale:≤150:0|151–200:2|201–250:4|251–300:6|>300:8 單位</p><label>劑量 <select id="sx"><option value="">請選擇</option>${[0,2,4,6,8].map(x=>`<option>${x}</option>`).join('')}</select> 單位</label><label class="chk"><input type="checkbox" id="ic"> 已核對病人與醫囑</label><p id="me" class="err"></p><div class="row"><button onclick="bedMenu(${t.bed})">返回</button><button class="on" onclick="insGo('${t.id}')">注射</button></div>`)}
+window.insGo=id=>{const t=T(id),x=document.getElementById('sx').value;if(!document.getElementById('ic').checked||x===''){S.blocks++;addLog(0,'胰島素核對未完成被阻止:'+t.tag);return document.getElementById('me').textContent='未核對或未選劑量,已阻止。'}
+ if(+x!==scaleDose(BG[t.bed]))return fail(t,'胰島素劑量不符方案','選 '+x+' 單位');finish(t,x+' 單位')};
+function vitalsUI(i){const t=T('v'+i);
+ if(t.status==='locked')return open(`<h3>${i+1} 床</h3><p class="err">尚未完成晨間交班,醫囑未確認,不能執行床邊任務。</p><div class="row"><button onclick="close_()">關閉</button></div>`);
+ if(t.status==='completed')return open(`<h3>${i+1} 床</h3><p class="good">生命徵象已完成:${t.result}</p><div class="row"><button onclick="close_()">關閉</button></div>`);
+ if(S.phase!=='play')return open(`<h3>${i+1} 床</h3><p>班次已結束。</p><div class="row"><button onclick="close_()">關閉</button></div>`);
+ const v=vitalsOf(i),u={T:'°C',P:'/min',R:'/min',SBP:'',DBP:'',SpO2:'%'};
+ open(`<h3>${i+1} 床 ${NAMES[i]} 生命徵象</h3><div style='background:#000;color:#ff3b3b;font:bold 20px monospace;padding:6px;border-radius:6px'>BP ${v.SBP}/${v.DBP} P ${v.P} SpO2 ${v.SpO2} T ${v.T} R ${v.R}</div><table>${['T','P','R'].map(k=>`<tr><td>${k}</td><td><b>${v[k]}</b>${u[k]}</td><td>參考 ${REF[k][0]}–${REF[k][1]}</td></tr>`).join('')}
+ <tr><td>BP</td><td><b>${v.SBP}/${v.DBP}</b></td><td>參考 ${REF.SBP[0]}–${REF.SBP[1]}/${REF.DBP[0]}–${REF.DBP[1]}</td></tr><tr><td>SpO2</td><td><b>${v.SpO2}</b>%</td><td>參考 ≥${REF.SpO2[0]}</td></tr></table>
+ <p>請判讀(虛構遊戲資料,耗時 ${t.cost} 分):</p><div class="row"><button onclick="close_()">先離開</button><button onclick="vJudge(${i},0)">正常,記錄</button><button class="on" onclick="vJudge(${i},1)">異常,通報</button></div>`)}
+window.vJudge=(i,rep)=>{const t=T('v'+i),ab=judgeVitals(vitalsOf(i)),isAb=ab.length>0,L=t.overdue;let p=L?CFG.pts.late:CFG.pts.done,why=L?'逾期完成':'完成',res='正常';
+ if(isAb&&rep){res='異常('+ab.join(',')+')已通報';why+=',正確通報'}
+ else if(isAb&&!rep){p=CFG.pts.major;res='異常('+ab.join(',')+')未通報';why='漏報異常(重大錯誤)';S.errors++}
+ else if(!isAb&&rep){p=CFG.pts.falseAlarm;res='正常(誤報)';why='誤報正常數據';S.errors++}
+ complete(t,p,why,res);close();toast(p<0?'判讀錯誤:'+why:'已完成 '+(i+1)+' 床生命徵象')};
+window.doEnd=()=>{complete(T('endshift'),CFG.pts.endshift,'完成班末交班');S.over=true;close();report()};
+// ===== 班末結算(由實際紀錄計算)=====
+const occ=()=>[...Array(13).keys()].filter(i=>bedState[i]==='occupied');
+const medN=i=>S.tasks.filter(t=>t.bed===i&&t.type==='med'&&t.status==='completed').length;
+const abnV=i=>{const v=T('v'+i);return !!v&&/異常/.test(v.result)};
+const rio=()=>({in:600+50*Math.floor(Math.random()*25),out:500+50*Math.floor(Math.random()*22)});const IO={4:rio()};for(let i=0;i<13;i++)if(i!==4&&Math.random()<.5)IO[i]=rio();while(Object.keys(IO).length<4)IO[Math.floor(Math.random()*13)]=rio();
+const ioList=()=>occ().filter(i=>IO[i]&&!(i===10&&T('dc').status==='completed'));
+const ioOf=i=>({in:IO[i].in+150*medN(i)+(T('iv').status==='completed'&&T('iv').bed===i?500:0),out:IO[i].out});
+const fallScore=i=>(abnV(i)?2:0)+(BG[i]?1:0)+(medN(i)>=2?1:0)+(T('a'+i)?1:0);
+const basis=i=>(abnV(i)?'生命徵象異常(2) ':'')+(BG[i]?'胰島素(1) ':'')+(medN(i)>=2?'多項給藥(1) ':'')+(T('a'+i)?'新入院(1)':'');
+const pend=()=>S.tasks.filter(x=>!['clockin','handover','endshift','doc','event'].includes(x.type)&&['available','locked'].includes(x.status));
+function docUI(t){const L=occ(),k=t.id,btn=`<p id="me" class="err"></p><div class="row"><button onclick="close_()">稍後</button><button class="on" onclick="docGo('${k}')">送出</button></div>`;
+ if(k==='io')return open(`<h3>${t.tag}</h3><p>依當班紀錄(給藥、點滴)計算。請逐床核算差值(入−出)。</p><table>${ioList().map(i=>`<tr><td>${i+1} 床</td><td>入 ${ioOf(i).in}</td><td>出 ${ioOf(i).out}</td><td><input class="iod" data-i="${i}" type="number" style="width:70px"></td></tr>`).join('')}</table><p style='font-size:12px'>僅列有出入量紀錄的床位,每床分開填寫差值(mL)。</p>${btn}`);
+ if(k==='fall')return open(`<h3>${t.tag}</h3><p>規則:生命徵象異常 2 分,胰島素、多項給藥、新入院各 1 分,合計 ≥2 為高風險。請勾選高風險床位。</p><table>${L.map(i=>`<tr><td><input type="checkbox" class="fc" value="${i}"></td><td>${i+1} 床</td><td style='font-size:12px'>${basis(i)||'無因子'}</td></tr>`).join('')}</table>${btn}`);
+ 
+ open(`<h3>${t.tag}</h3><p>尚未完成 ${pend().length} 項:${pend().map(x=>(x.bed+1)+'床'+x.tag).join('、')||'無'}</p><label class="chk"><input type="checkbox" id="uc"> 已逐項確認並納入交班</label>${btn}`)}
+window.docGo=k=>{const t=T(k),m=document.getElementById('me'),L=occ();t.tries=t.tries||0;const bad=s=>{t.tries++;addLog(0,t.tag+'與紀錄不符,已提示更正');m.textContent=s},P=()=>t.tries?4:8,W=()=>t.tries?'更正後完成':'一次完成';
+ if(k==='io'){const r=[...document.querySelectorAll('.iod')],b=r.filter(x=>x.value===''||+x.value!==ioOf(+x.dataset.i).in-ioOf(+x.dataset.i).out);if(b.length)return bad(b.map(x=>+x.dataset.i+1).join('、')+' 床差值不符或未填,請重新核算。');complete(t,P(),W(),'共 '+r.length+' 床,逐床核算正確')}
+ else if(k==='fall'){const sel=[...document.querySelectorAll('.fc')].filter(c=>c.checked).map(c=>+c.value),hi=L.filter(i=>fallScore(i)>=2),b=L.filter(i=>sel.includes(i)!==hi.includes(i));if(b.length)return bad(b.map(i=>i+1).join('、')+' 床判定與依據不符,請對照依據。');complete(t,P(),W(),'高風險 '+hi.length+' 床')}
+ 
+ else{if(!document.getElementById('uc').checked)return m.textContent='請勾選確認。';complete(t,8,'完成','已確認 '+pend().length+' 項未完成')}
+ close();toast(t.tag+' 已完成')};
+function vit(){const d=S.t-S.lt;S.lt=S.t;if(d<=0)return;S.hung=Math.min(100,S.hung+d*.16);S.stam=Math.max(0,S.stam-d*.13*(1+(S.hung>70?.5:0)+S.stress/200));if(S.stam<30&&!S.w1){S.w1=1;toast('體力不支:行動變慢、操作耗時 +20%')}if(S.hung>70&&!S.w2){S.w2=1;toast('餓過頭了:體力消耗變快、壓力上升')}}
+const mealTxt=()=>S.ate==='full'?'有吃午餐('+fmt(S.mealAt)+' 用餐)':S.ate==='part'?'午餐被打斷,只吃了幾口':'沒吃午餐,餓著撐完整班';
+function restUI(){const ok=S.t>=690&&S.t<=900;if(S.ate)return open(`<h3>休息區</h3><p>今天的午餐已處理:${mealTxt()}。</p><div class="row"><button onclick="close_()">關閉</button></div>`);
+ open(`<h3>休息區</h3><p>便當放在這裡。用餐約 15 分鐘。飢餓 ${Math.round(S.hung)}%、體力 ${Math.round(S.stam)}%。${ok?'':'<span class=err>目前不是用餐時段(11:30–15:00)</span>'}</p><div class="row"><button onclick="close_()">不吃</button><button class="on" ${ok?'':'disabled'} onclick="eat()">吃午餐(15 分)</button></div>`)}
+window.eat=()=>{const ne=S.tasks.filter(e=>e.type==='event'&&e.status==='locked'&&e.from>S.t&&e.from<=S.t+15&&(!e.req||T(e.req).status==='completed')).sort((a,b)=>a.from-b.from)[0],cut=!!ne;S.ate=cut?'part':'full';S.mealAt=S.t;S.hung=Math.max(0,S.hung-(cut?25:65));S.stam=Math.min(100,S.stam+(cut?5:18));if(!cut)S.stress=Math.max(0,S.stress-8);addLog(0,cut?'午餐被事件打斷,只吃幾口':'完成午餐');close();advance(cut?ne.from-S.t:15);toast(cut?'才剛吃幾口又有事了…':'終於吃到午餐了')};
+function speedUI(){open(`<h3>自由調整時間</h3><p>調整時間流速(遊戲分鐘/現實秒)。只能調速度或暫停,不能跳過或回到過去,任務與事件期限照常計算。</p><input type="range" id="spd" min="0.2" max="4" step="0.1" value="${CFG.rates[3]}" style="width:100%"><p>目前 <b id="spv">${CFG.rates[3]}</b> 倍</p><div class="row"><button onclick="close_()">取消</button><button class="on" onclick="spdGo()">套用</button></div>`);document.getElementById('spd').oninput=e=>document.getElementById('spv').textContent=e.target.value}
+window.spdGo=()=>{CFG.rates[3]=+document.getElementById('spd').value;setMode(3);close()};
+let CP=null;
+function cprUI(t){if(!CP||CP.t!==t)CP={t,ph:0,n:0,tot:0,good:0,last:0,cyc:1,need:30,v:0,sh:0,iv:0,arr:S.t};cpr()}
+function cpr(){const Q=CP,t=Q.t;clearInterval(Q.iv);let h='';
+ if(Q.ph===0)h=`<p>9 床病人無反應、無呼吸!(遊戲化簡化流程,非真實急救指引)</p><div class="row"><button class="on" onclick="cp(0)">① 呼叫支援・啟動 Code Blue</button></div>`;
+ else if(Q.ph===1)h=`<p>第 ${Q.cyc} 輪:跟著節拍壓胸(目標約每 0.55 秒一次)</p><div id="met" style="width:80px;height:80px;border-radius:50%;margin:8px auto;background:#444"></div><button style="width:100%;height:100px;font-size:24px;background:#e8505b;color:#fff;border:0;border-radius:12px" onpointerdown="cp(1)">壓胸 ${Q.n}/${Q.need}</button><p id="cpf"></p>`;
+ else if(Q.ph===2)h=`<p>給予 2 次人工呼吸(${Q.v}/2)</p><div class="row"><button class="on" onclick="cp(2)">人工呼吸</button></div>`;
+ else if(Q.ph===3)h=`<p>監視器顯示心室顫動(VF)(虛構)。下一步?</p><div class="row"><button class="on" onclick="cp(3,1)">準備電擊</button><button onclick="cp(3,0)">繼續壓胸</button></div><p id="cpf" class="err"></p>`;
+ else if(Q.ph===4)h=`<p>電擊程序(${Q.sh}/3)</p><div class="row"><button class="on" onclick="cp(4)">${['充電','大聲喚「大家離開!」','放電'][Q.sh]}</button></div>`;
+ else h=`<p>心律已恢復規則(虛構)。檢查頸動脈脈搏:</p><div class="row"><button class="on" onclick="cp(5)">確認脈搏・交接</button></div>`;
+ open(`<h3>🚨 CODE BLUE・${t.tag}</h3>${h}`);
+ if(Q.ph===1)Q.iv=setInterval(()=>{const m=document.getElementById('met');if(!m)return clearInterval(Q.iv);m.style.background='#f05050';setTimeout(()=>{m.style.background='#444'},180);beep(700,.05,'square')},545)}
+window.cp=(k,x)=>{const Q=CP,t=Q.t;
+ if(k===0){Q.ph=1;S.stress=Math.min(100,S.stress+10)}
+ else if(k===1){const n=performance.now();if(Q.last){const d=n-Q.last;Q.tot++;if(d>=450&&d<=650)Q.good++;const f=document.getElementById('cpf');if(f)f.textContent=d<450?'太快':d>650?'太慢':'很好'}Q.last=n;Q.n++;if(Q.n<Q.need){document.querySelector('#box button').textContent='壓胸 '+Q.n+'/'+Q.need;return}Q.ph=Q.cyc===1?2:5;Q.last=0}
+ else if(k===2){Q.v++;if(Q.v>=2)Q.ph=3}
+ else if(k===3){if(!x){S.blocks++;addLog(0,'Code Blue:VF 未電擊被提示');const f=document.getElementById('cpf');if(f)f.textContent='VF 屬可電擊心律,請準備電擊。';return}Q.ph=4}
+ else if(k===4){Q.sh++;if(Q.sh>=3){Q.cyc=2;Q.need=20;Q.n=0;Q.last=0;Q.ph=1}}
+ else{clearInterval(Q.iv);const r=Q.tot?Q.good/Q.tot:0,delay=Math.round(Q.arr-t.from),ok=r>=.6;let p=ok?15:-5;if(ok&&r>=.8)p+=5;if(ok&&delay<=4)p+=3;if(!ok)S.errors++;S.stam=Math.max(0,S.stam-12);if(ok)S.stress=Math.max(0,S.stress-10);else killPatient(t.bed,'急救未能恢復循環');
+  complete(t,p,ok?'急救成功(ROSC)':'急救未恢復循環・宣告死亡',ok?'ROSC・按壓品質 '+Math.round(r*100)+'%':'宣告死亡・按壓品質 '+Math.round(r*100)+'%');CP=null;close();
+  open(`<h3>${ok?'✅ 急救成功':'💔 搜救無效'}</h3><p>警報到抵達:${delay} 分<br>按壓品質:${Math.round(r*100)}%(節拍合格 ${Q.good}/${Q.tot})<br>得分:${p}</p><p style='font-size:12px'>遊戲化簡化流程,非真實急救指引。</p><div class="row"><button class="on" onclick="close_()">回到工作</button></div>`);return}
+ cpr()};
+function handRep(){const P=S.tasks.filter(x=>['available','locked'].includes(x.status)),by=f=>P.filter(f),bd=a=>a.length?a.map(x=>x.bed+1).join('、')+' 床':'無',ev=S.tasks.filter(x=>x.type==='event'&&!['completed','locked'].includes(x.status));
+ return `<div style='font-size:13px;line-height:1.7'><b>交班報告(依實際紀錄)</b><br>未完成生命徵象:${by(x=>x.type==='vitals').length} 床(${bd(by(x=>x.type==='vitals'))})<br>漏藥:${['早藥','午藥','下午藥'].map(s=>s+' '+bd(by(x=>x.type==='med'&&x.slotName===s))).join('｜')}<br>未完成治療:${bd(by(x=>['dressing','steam'].includes(x.type)))}<br>未完成檢驗/特殊:血糖 ${bd(by(x=>x.type==='glucose'))}｜胰島素 ${bd(by(x=>x.type==='insulin'))}<br>未處理/逾期事件:${ev.length?ev.map(x=>x.tag).join('、'):'無'}<br>文書:${S.tasks.filter(x=>x.type==='doc').map(x=>x.tag+(x.status==='completed'?'✓':'✗')).join('、')}<br>床位變更:${T('dc').status==='completed'?'11 床出院':'11 床未出院'};${['triage1','triage2','triage3'].filter(k=>T(k).status==='completed').length} 位救護車送達入床${T('tr').status==='completed'?';轉床完成':''}<br>重要狀態變化:${S.tasks.filter(x=>x.type==='vitals'&&/異常/.test(x.result)).map(x=>(x.bed+1)+'床'+x.result).join('、')||'無'};Code Blue ${T('cb2').status==='completed'?T('cb2').result:'未完成處置'}<br>交班事項:晨間交班${T('handover').status==='completed'?'已完成':'未完成'}</div>`}
+function cats(){const o={};S.log.forEach(l=>{if(!l.pts)return;const k=/逾期/.test(l.why)?'逾期扣分':/漏失/.test(l.why)?'漏失扣分':/重大錯誤|漏報|誤報/.test(l.why)?'操作錯誤扣分':/違規/.test(l.why)?'違規扣分':l.pts>0?'完成與事件得分':'其他扣分';o[k]=(o[k]||0)+l.pts});return '<table>'+Object.entries(o).map(([k,v])=>`<tr><td>${k}</td><td class="${v>0?'good':'err'}">${v}</td></tr>`).join('')+'</table>'}
+function summ(){const g=(ty,n)=>{const m=S.tasks.filter(t=>t.type===ty&&t.status==='missed');return n+':'+(m.length?m.map(t=>t.bed+1).join('、')+' 床':'無')};const ms=S.tasks.filter(t=>t.type==='med'&&t.status==='missed').map(t=>(t.bed+1)+'床'+t.slotName);
+ return g('glucose','漏血糖')+'<br>'+g('insulin','漏胰島素')+'<br>漏藥:'+(ms.length?ms.join('、'):'無')+'<br>'+g('dressing','漏換藥')+'<br>'+g('steam','漏蒸氣治療')+'<br>事件:'+S.tasks.filter(t=>t.type==='event').map(t=>t.tag+(t.status==='completed'?'✓':'✗')).join('、')+'<br>被阻止的違規嘗試:'+S.blocks+' 次<br>'}
+function report(){S.tasks.forEach(t=>{if(!['clockin','handover','endshift','event','doc'].includes(t.type)&&(t.status==='available'||t.status==='locked')){t.status='missed';addLog(CFG.pts.missed,t.title+' 漏失')}});
+ const vt=S.tasks.filter(t=>t.type==='vitals'),miss=vt.filter(t=>t.status==='missed'),done=vt.filter(t=>t.status==='completed'),late=done.filter(t=>t.overdue);
+ const title=S.score>=140&&!S.tasks.some(t=>t.status==='missed')&&!S.deaths.length?'急診鋼鐵護理師':S.score>=90?'多工調度專家':S.score>=30?'勉強撐過一班':'被工作追著跑的一天';
+ open(`<h3>班末報告:${title}</h3><p>總分 <b>${S.score}</b>(稱號僅為遊戲趣味,非能力評價)${S.deaths.length?'<br><span class="err">當班有 '+S.deaths.length+' 位病人搜救無效死亡('+S.deaths.map(d=>(d.bed+1)+'床')+')</span>':''}</p>
+ <p>🍱 ${mealTxt()}<br>班末體力 ${Math.round(S.stam)}%・飢餓 ${Math.round(S.hung)}%<br>被事件強制打斷 ${S.intr} 次<br>預估下班後仍需補做約 ${S.tasks.filter(x=>x.status==='missed').reduce((s,x)=>s+x.cost,0)} 分鐘</p><p>生命徵象完成 ${done.length}/${vt.filter(t=>t.status!=='cancelled').length}(逾期完成 ${late.length})<br>漏生命徵象:${miss.length?miss.map(t=>t.bed+1).join('、')+' 床':'無'}<br>${summ()}重大/誤判錯誤:${S.errors} 次</p>
+ <p><b>分項合計</b></p>${cats()}<p><b>加減分明細</b></p><table>${S.log.filter(l=>l.pts).map(l=>`<tr><td>${fmt(l.t)}</td><td>${l.why}</td><td class="${l.pts>0?'good':'err'}">${l.pts>0?'+':''}${l.pts}</td></tr>`).join('')}</table>
+ <p style="font-size:12px">自我測試:網址加上 ?test 可查看。此結算與互動流程皆為遊戲化簡化設計,非真實臨床或急救教學依據。</p><div class="row"><button class="on" onclick="location.reload()">重新開始</button></div>`)}
+// ===== HUD =====
+function setMode(m){S.mode=m;[0,1,2,3].forEach(i=>document.getElementById('m'+i).classList.toggle('on',i===m))}
+[0,1,2,3].forEach(i=>document.getElementById('m'+i).onclick=()=>{if(S.phase==='play')i===3?speedUI():setMode(i)});
+document.getElementById('act').onclick=doAct;
+document.getElementById('nav').onclick=()=>{S.nav=!S.nav;document.getElementById('nav').classList.toggle('on',S.nav)};let MUTE=false;document.getElementById('mu').onclick=function(){MUTE=!MUTE;this.textContent=MUTE?'🔇':'🔊';if(MUTE)stopBGM();else if(S.started)startBGM()};
+document.getElementById('startBtn').onclick=()=>{document.getElementById('start').style.display='none';S.started=true;S.lt=S.t;startBGM()};
+document.addEventListener('visibilitychange',()=>{S.hidden=document.hidden;if(document.hidden)toast('')});
+function target(){const av=S.tasks.filter(t=>t.status==='available');if(!av.length)return null;
+ const pos=t=>{const c=t.type==='vitals'?VS:(t.type==='med'||t.type==='insulin')?TX:null;if(c&&t.bed!=null&&!near(c,t.bed)&&HELD!==c)return c.it;return t.bed!=null?IT[t.bed]:IT.find(i=>i.type===(t.loc||'station'))};
+ av.sort((a,b)=>((b.overdue?100:0)+b.pri)-((a.overdue?100:0)+a.pri)||(a.due||9999)-(b.due||9999)||Math.hypot(pos(a).x-nurse.position.x,pos(a).z-nurse.position.z)-Math.hypot(pos(b).x-nurse.position.x,pos(b).z-nurse.position.z));
+ return {t:av[0],it:pos(av[0])}}
+function hud(){document.getElementById('clk').textContent=fmt(S.t);document.getElementById('sc').textContent=S.score;
+ const av=S.tasks.filter(t=>t.status==='available'),od=av.filter(t=>t.overdue).length;
+ const tg=av.length*1.5+av.filter(t=>t.type==='event').length*8+(S.hung>70?10:0)+od*8+S.errors*6+(S.t-CFG.start)/510*15;S.stress+=(Math.min(100,tg)-S.stress)*.02;document.querySelector('#bar i').style.width=S.stress+'%';document.getElementById('stb').style.width=S.stam+'%';document.getElementById('hgb').style.width=S.hung+'%';document.getElementById('stv').textContent=Math.round(S.stam)+'%';document.getElementById('srv').textContent=Math.round(S.stress)+'%';document.getElementById('hgv').textContent=S.ate==='full'?'吃飽了':S.ate==='part'?'只吃幾口':(S.t>=690?'沒吃午餐':Math.round(S.hung)+'%');document.querySelector('#bar i').style.background=S.stress>70?'#f05a5a':S.stress>40?'#f0b030':'#3fe0c5';document.getElementById('stats').style.top=(document.getElementById('task').getBoundingClientRect().bottom+6)+'px';document.getElementById('vg').style.opacity=Math.min(1,Math.max(0,(S.stress-55)/60));document.getElementById('task').style.top=(document.getElementById('top').getBoundingClientRect().bottom+6)+'px';
+ const d=S.tasks.filter(t=>t.status==='completed').length;document.getElementById('prog').textContent=d+'/'+S.tasks.length+' '+(S.phase==='play'?'當班中':'班末');
+ const g=target(),tt=document.getElementById('tt'),ar=document.getElementById('arrow');
+ if(g){tt.innerHTML=`<small>待處理的 call:${av.length}</small><br><b>${g.t.title}</b><br>${g.t.due?'期限 '+fmt(g.t.due)+(g.t.overdue?' <span class="err">已逾期</span>':''):'無期限'}・優先 ${g.t.pri}・約 ${Math.round(Math.hypot(g.it.x-nurse.position.x,g.it.z-nurse.position.z))} 公尺`;
+  ring.visible=true;ring.material.color.set(g.t.type==='event'&&g.t.pri>=15?0xe03030:0xf0a020);ring.position.set(g.it.x,.08,g.it.z);exc.visible=true;exc.position.set(g.it.x,3.4+.15*Math.sin(performance.now()/250),g.it.z);ring.scale.setScalar(1+.1*Math.sin(performance.now()/200));
+  const dx=g.it.x-nurse.position.x,dz=g.it.z-nurse.position.z;ar.style.display=S.nav?'inline-block':'none';ar.style.transform=`rotate(${Math.atan2(dx+dz,dx-dz)}rad)`}
+ else{tt.textContent=S.phase==='play'?'目前沒有可執行任務':'—';ring.visible=false;exc.visible=false;ar.style.display='none'}
+ const cbA=['cb1','cb2'].some(k=>T(k).status==='available');bcn.visible=cbA;{const ck=['cb1','cb2'].find(k=>T(k).status==='available'),cb=document.getElementById('cbbar');if(ck){cb.style.display='block';cb.style.top=document.getElementById('top').getBoundingClientRect().bottom+'px';cb.textContent='🚨 CODE BLUE 9 床・剩 '+Math.max(0,Math.ceil(T(ck).due-S.t))+' 分';if(!S.modal&&performance.now()-(S.al||0)>1000){S.al=performance.now();beep(900,.18,'square')}}else cb.style.display='none';pats[8].material.color.set(ck?0x8fa6c8:0xf2c9a0)}if(cbA){bcn.position.set(bedPos[8][0],3.2,bedPos[8][1]);bcn.rotation.y+=.2;bcn.scale.setScalar(1+.3*Math.sin(performance.now()/120))}
+ gl.visible=!!g&&S.nav;if(gl.visible){const q=gl.geometry.attributes.position;q.setXYZ(0,nurse.position.x,.12,nurse.position.z);q.setXYZ(1,g.it.x,.12,g.it.z);q.needsUpdate=true}
+ const it=nearest(),a=document.getElementById('act');a.disabled=!it||S.modal;a.textContent=it?'互動':'互動';
+ if(it&&!S.modal)document.getElementById('hint').innerHTML='<span>按 E / 互動:'+it.name+'</span>'}
+// ===== 主迴圈 =====
+let last=performance.now();
+function resize(){R.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()}addEventListener('resize',resize);resize();
+function loop(now){requestAnimationFrame(loop);if(S.hidden){last=now;return}const dt=Math.min(.05,(now-last)/1000);last=now;
+ lightBulbs.forEach(l=>l.visible=Math.sin(now/180)>0);
+ if(!S.hidden&&!S.over&&S.mode>0&&S.phase==='play'&&!S.modal&&S.started){S.t=Math.min(CFG.end,S.t+dt*CFG.rates[S.mode]);onTime()}
+ if(!S.modal&&!S.over&&S.started){let x=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0)+jx,z=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0)+jz;const l=Math.hypot(x,z);
+  if(l>.1){if(l>1){x/=l;z/=l}{const a=x,b=z;x=(a+b)*.7071;z=(b-a)*.7071}const p=nurse.position,nx=p.x+x*CFG.speed*dt*(S.stam<30?.8:1),nz=p.z+z*CFG.speed*dt*(S.stam<30?.8:1);const ox=p.x,oz=p.z,k=HELD?.7:1;if(!hit(p.x+(nx-p.x)*k,p.z))p.x+=(nx-p.x)*k;if(!hit(p.x,p.z+(nz-p.z)*k))p.z+=(nz-p.z)*k;nurse.rotation.y=Math.atan2(x,z);if(HELD&&!moveCart()){p.x=ox;p.z=oz}nurse.position.y=Math.abs(Math.sin(now/90))*.08}else nurse.position.y=0}
+ const p=nurse.position,h=innerWidth<innerHeight?20:14;cam.position.set(p.x+h*.62,h,p.z+h*.62);cam.lookAt(p.x,0,p.z);
+ refreshLocks();hud();R.render(sc,cam)}
+refreshLocks();requestAnimationFrame(loop);
+window.__game={S,CFG,judgeVitals,vitalsOf,hit,nurse};
+if(location.search.includes('test')){const R=[],ok=(n,c)=>R.push((c?'✓ ':'✗ ')+n);ok('正常生命徵象判定',judgeVitals(vitalsOf(0)).length===0);ok('1 床外的 3 床 SpO2 異常',judgeVitals(vitalsOf(2)).includes('SpO2'));ok('胰島素表 188→2',scaleDose(188)===2);ok('胰島素表 315→8',scaleDose(315)===8);ok('病人 8 位',bedState.filter(s=>s==='occupied').length===8);ok('未交班時生命徵象被鎖',lockWhy(T('v0'))!=='');ok('早藥依床號順序',T('m1am').req==='m0am');ok('午藥依床號順序',T('m3noon').req==='m2noon');ok('出院需先完成電話交班',T('dc').req==='dcCall');ok('空床生命徵象已取消',T('v5').status==='cancelled');ok('起始時間 07:30',S.t===450);setTimeout(()=>open('<h3>自我測試</h3><pre style="white-space:pre-wrap">'+R.join('\n')+'</pre><div class="row"><button onclick="close_()">關閉</button></div>'),400)}
+</script></body></html>
